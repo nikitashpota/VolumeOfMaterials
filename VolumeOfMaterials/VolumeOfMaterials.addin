@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Application VolumeOfMaterials</Name>
+    <Assembly>VolumeOfMaterials.dll</Assembly>
+    <FullClassName>VolumeOfMaterials.App</FullClassName>
+    <ClientId>1d6f77e9-fb6c-4a9d-9a79-47302df2f8eb</ClientId>
+    <VendorId>nikita.shpota.prog</VendorId>
+    <VendorDescription>https://www.revitapidocs.com/</VendorDescription>
+  </AddIn>
+</RevitAddIns>
