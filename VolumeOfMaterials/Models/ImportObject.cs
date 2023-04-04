@@ -28,12 +28,36 @@ namespace VolumeOfMaterials.Models
                 {
                     Volume = GetVolumeElement(element);
                 }
+                else if (dimensions.Contains("A"))
+                {
+                    Area = GetAreaElement(element);
+                }
+
             }
             catch(Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
             
+        }
+
+        private int GetCategoryId (Element element)
+        {
+            var categoryId = 0;
+            categoryId = element.Category.GetHashCode();
+            return categoryId;
+        }
+
+        private double GetAreaElement(Element element)
+        {
+            var parameter = element.get_Parameter(BuiltInParameter.HOST_AREA_COMPUTED);
+            var area = (double)0;
+
+            if (parameter != null)
+            {
+                area = parameter.AsDouble();
+            }
+            return area;
         }
 
         private double GetVolumeElement(Element element)
@@ -67,5 +91,6 @@ namespace VolumeOfMaterials.Models
 
             return solids.Sum(s => s.Volume);
         }
+
     }
 }
