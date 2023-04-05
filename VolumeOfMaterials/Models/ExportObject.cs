@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace VolumeOfMaterials.Models
+﻿namespace VolumeOfMaterials.Models
 {
     public class ExportObject
     {
@@ -12,10 +6,12 @@ namespace VolumeOfMaterials.Models
         public double Volume { get; set; } = 0;
         public double Length { get; set; } = 0;
         public double Area { get; set; } = 0;
-        public double Count { get; set; } = 1;
+        public double Count { get; set; } = 0;
+        public string Code { get; set; } = string.Empty;
 
-        public ExportObject(string name) { 
-            Name = name;   
+        public ExportObject(string name)
+        {
+            Name = name;
         }
     }
 }

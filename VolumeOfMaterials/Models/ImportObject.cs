@@ -17,7 +17,6 @@ namespace VolumeOfMaterials.Models
         public double Area { get; set; } = 0;
 
         public double Count { get; set; } = 1;
-        //public Dictionary<string, double> Attributes { get; set; } = new Dictionary<string, double>();
 
 
         public ImportObject(Element element, Element type)
@@ -31,7 +30,6 @@ namespace VolumeOfMaterials.Models
                 if (dimensions.Contains("V"))
                 {
                     Volume = GetVolumeElement(element);
-                    //Attributes.Add("Volume", Volume);
                 }
                 if (dimensions.Contains("A"))
                 {

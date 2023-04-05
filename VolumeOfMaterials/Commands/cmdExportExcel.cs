@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using VolumeOfMaterials.Models;
+using static VolumeOfMaterials.Helpers;
 
 namespace VolumeOfMaterials.Commands
 {
@@ -42,10 +43,14 @@ namespace VolumeOfMaterials.Commands
 
             foreach (var group in importObjects.GroupBy(e => e.Name))
             {
-                var exportObject = new ExportObject(group.Key);
-                exportObject.Volume = Helpers.ToCubeMeters(group.Sum(e => e.Volume));
-                exportObject.Area = Helpers.ToSqMeters( group.Sum(e => e.Area));
-                exportObject.Length =Helpers.ToMeters( group.Sum(e => e.Length));
+                var exportObject = new ExportObject(group.Key)
+                {
+                    Volume = ToCubeMeters(group.Sum(e => e.Volume)),
+                    Area = ToSqMeters(group.Sum(e => e.Area)),
+                    Length = ToMeters(group.Sum(e => e.Length)),
+                    Code = group.FirstOrDefault()?.Code,
+                    Count = group.Sum(e => e.Count),
+                };
 
                 exportObjects.Add(exportObject);
             }
@@ -59,10 +64,9 @@ namespace VolumeOfMaterials.Commands
                 var index = Array.IndexOf(tableExport[subArrayIndex], ex.Name) + 1;
 
                 object[][] exportArray = new object[1][];
-                exportArray[0] = new object[] { ex.Volume.ToString(), ex.Area.ToString(), ex.Length.ToString() };
+                exportArray[0] = SetObjectToImport(ex);
                 DSOffice.Data.ExportExcel(window.txtExportTable.Text, window.txtExportBook.Text, subArrayIndex, index, exportArray);
             }
-
             return Result.Succeeded;
         }
 
@@ -79,7 +83,5 @@ namespace VolumeOfMaterials.Commands
             }
             else return false;
         }
-
     }
-
 }
