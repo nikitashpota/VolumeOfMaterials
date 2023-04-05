@@ -15,6 +15,11 @@ namespace VolumeOfMaterials.Models
         public double Volume { get; set; } = 0;
         public double Length { get; set; } = 0;
         public double Area { get; set; } = 0;
+
+        public double Count { get; set; } = 1;
+        //public Dictionary<string, double> Attributes { get; set; } = new Dictionary<string, double>();
+
+
         public ImportObject(Element element, Element type)
         {
             Code = type.LookupParameter("PP_Code").AsString();
@@ -22,35 +27,61 @@ namespace VolumeOfMaterials.Models
 
             try
             {
-                //var elementClass = Code.Split('_').ToList()[0];
                 var dimensions = Code.Split('_').ToList()[1];
                 if (dimensions.Contains("V"))
                 {
                     Volume = GetVolumeElement(element);
+                    //Attributes.Add("Volume", Volume);
                 }
-                else if (dimensions.Contains("A"))
+                if (dimensions.Contains("A"))
                 {
                     Area = GetAreaElement(element);
+                }
+                if (dimensions.Contains("L"))
+                {
+                    Length = GetLengthElement(element);
                 }
 
             }
             catch(Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                //MessageBox.Show(ex.Message);
             }
             
         }
 
-        private int GetCategoryId (Element element)
+        private int GetCategoryId (Element e)
         {
             var categoryId = 0;
-            categoryId = element.Category.GetHashCode();
+            categoryId = e.Category.GetHashCode();
             return categoryId;
         }
 
-        private double GetAreaElement(Element element)
+        private double GetLengthElement(Element e)
         {
-            var parameter = element.get_Parameter(BuiltInParameter.HOST_AREA_COMPUTED);
+            var length = (double)0;
+            var categoryId = GetCategoryId(e);
+            var parameter = (Parameter)null;
+
+            if(categoryId == BuiltInCategory.OST_StructuralFraming.GetHashCode() 
+                || categoryId == BuiltInCategory.OST_Walls.GetHashCode()
+                || categoryId == BuiltInCategory.OST_StairsRailing.GetHashCode()
+                || categoryId == BuiltInCategory.OST_Roofs.GetHashCode())
+            {
+                parameter = e.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH);
+            }
+
+            if (parameter != null)
+            {
+                length = parameter.AsDouble();
+            }
+
+            return length;
+        }
+
+        private double GetAreaElement(Element e)
+        {
+            var parameter = e.get_Parameter(BuiltInParameter.HOST_AREA_COMPUTED);
             var area = (double)0;
 
             if (parameter != null)
@@ -60,9 +91,9 @@ namespace VolumeOfMaterials.Models
             return area;
         }
 
-        private double GetVolumeElement(Element element)
+        private double GetVolumeElement(Element e)
         {
-            var geometryElement = element.get_Geometry(new Options());
+            var geometryElement = e.get_Geometry(new Options());
             var solids = new List<Solid>(); 
 
             foreach (GeometryObject geometryObject in geometryElement)

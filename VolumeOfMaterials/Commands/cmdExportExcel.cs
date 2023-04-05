@@ -2,8 +2,10 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using VolumeOfMaterials.Models;
 
 namespace VolumeOfMaterials.Commands
@@ -24,41 +26,60 @@ namespace VolumeOfMaterials.Commands
             if (!window.DialogResult.Value) return Result.Cancelled;
 
             var docElements = new FilteredElementCollector(doc).WhereElementIsNotElementType().ToElements();
-            var filterElements = new List<Element>();
+            var importObjects = new List<ImportObject>();
 
             foreach (var element in docElements)
             {
                 var type = doc.GetElement(element.GetTypeId());
-
-                //Room.ParametersMap.Contains(name)
-
-                if (type?.LookupParameter("PP_Code") != null
-                    && type?.LookupParameter("PP_NameElement") != null
-                    && type?.LookupParameter("PP_Code").AsString() != null
-                    && type?.LookupParameter("PP_NameElement").AsString() != null
-                    && type?.LookupParameter("PP_Code").AsString().Length > 0
-                    && type?.LookupParameter("PP_NameElement").AsString().Length > 0)
+                if (CheckOfTypeElement(type))
                 {
-                    filterElements.Add(element);
                     var importObject = new ImportObject(element, type);
-                    var volume = importObject.Volume;
+                    importObjects.Add(importObject);
                 }
             }
 
-            var fileImport = new FileInfo(window.txtImportTable.Text);
-            var tableImport = DSOffice.Data.ImportExcel(fileImport, window.txtImportBook.Text);
-            for (int i = 1; i < tableImport.Length - 1; i++)
+            var exportObjects = new List<ExportObject>();
+
+            foreach (var group in importObjects.GroupBy(e => e.Name))
             {
-                var tableString = tableImport[i];
+                var exportObject = new ExportObject(group.Key);
+                exportObject.Volume = Helpers.ToCubeMeters(group.Sum(e => e.Volume));
+                exportObject.Area = Helpers.ToSqMeters( group.Sum(e => e.Area));
+                exportObject.Length =Helpers.ToMeters( group.Sum(e => e.Length));
+
+                exportObjects.Add(exportObject);
             }
 
-            object[][] myArray = new object[3][];
-            //myArray[0] = new object[] { "hello1", "hello2", "hello3" };
-            //myArray[1] = new object[] { "world1", "world3", "world3" };
-            //myArray[2] = new object[] { "!1", "!", "!3" };
-            //DSOffice.Data.ExportExcel(window.txtExportTable.Text, window.txtExportBook.Text, 0, 0, myArray);
+            var fileExport = new FileInfo(window.txtExportTable.Text);
+            var tableExport = DSOffice.Data.ImportExcel(fileExport, window.txtExportBook.Text);
+
+            foreach (var ex in exportObjects)
+            {
+                var subArrayIndex = Array.FindIndex(tableExport, row => Array.IndexOf(row, ex.Name) != -1);
+                var index = Array.IndexOf(tableExport[subArrayIndex], ex.Name) + 1;
+
+                object[][] exportArray = new object[1][];
+                exportArray[0] = new object[] { ex.Volume.ToString(), ex.Area.ToString(), ex.Length.ToString() };
+                DSOffice.Data.ExportExcel(window.txtExportTable.Text, window.txtExportBook.Text, subArrayIndex, index, exportArray);
+            }
 
             return Result.Succeeded;
         }
+
+        private bool CheckOfTypeElement(Element t)
+        {
+            if (t?.LookupParameter("PP_Code") != null
+                && t?.LookupParameter("PP_NameElement") != null
+                && t?.LookupParameter("PP_Code").AsString() != null
+                && t?.LookupParameter("PP_NameElement").AsString() != null
+                && t?.LookupParameter("PP_Code").AsString().Length > 0
+                && t?.LookupParameter("PP_NameElement").AsString().Length > 0)
+            {
+                return true;
+            }
+            else return false;
+        }
+
     }
+
 }
