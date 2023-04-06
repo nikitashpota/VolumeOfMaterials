@@ -27,19 +27,29 @@ namespace VolumeOfMaterials.Models
             try
             {
                 var dimensions = Code.Split('_').ToList()[1];
-                if (dimensions.Contains("V"))
-                {
-                    Volume = GetVolumeElement(element);
-                }
-                if (dimensions.Contains("A"))
-                {
-                    Area = GetAreaElement(element);
-                }
-                if (dimensions.Contains("L"))
-                {
-                    Length = GetLengthElement(element);
-                }
+                var props = Helpers.GetPropertiesInOrder(dimensions);
 
+                foreach (var prop in props)
+                {
+                    switch (prop)
+                    {
+                        case Helpers.Property.Volume:
+                            Volume = GetVolumeElement(element);
+                            break;
+
+                        case Helpers.Property.Length:
+                            Length = GetLengthElement(element);
+                            break ;
+
+                        case Helpers.Property.Area:
+                            Area = GetAreaElement(element);
+                            break;
+
+                        case Helpers.Property.Count:
+                            Count = 1;
+                            break;
+                    }
+                }
             }
             catch(Exception ex)
             {

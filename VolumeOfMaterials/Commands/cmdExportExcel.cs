@@ -64,20 +64,20 @@ namespace VolumeOfMaterials.Commands
                 var index = Array.IndexOf(tableExport[subArrayIndex], ex.Name) + 1;
 
                 object[][] exportArray = new object[1][];
-                exportArray[0] = SetObjectToImport(ex);
+                exportArray[0] = SetValuesToExport(ex);
                 DSOffice.Data.ExportExcel(window.txtExportTable.Text, window.txtExportBook.Text, subArrayIndex, index, exportArray);
             }
             return Result.Succeeded;
         }
 
-        private bool CheckOfTypeElement(Element t)
+        private bool CheckOfTypeElement(Element type)
         {
-            if (t?.LookupParameter("PP_Code") != null
-                && t?.LookupParameter("PP_NameElement") != null
-                && t?.LookupParameter("PP_Code").AsString() != null
-                && t?.LookupParameter("PP_NameElement").AsString() != null
-                && t?.LookupParameter("PP_Code").AsString().Length > 0
-                && t?.LookupParameter("PP_NameElement").AsString().Length > 0)
+            if (type?.LookupParameter("PP_Code") != null
+                && type?.LookupParameter("PP_NameElement") != null
+                && type?.LookupParameter("PP_Code").AsString() != null
+                && type?.LookupParameter("PP_NameElement").AsString() != null
+                && type?.LookupParameter("PP_Code").AsString().Length > 0
+                && type?.LookupParameter("PP_NameElement").AsString().Length > 0)
             {
                 return true;
             }

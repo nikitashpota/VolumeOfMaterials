@@ -28,7 +28,6 @@ namespace VolumeOfMaterials.FrontEnd
             openFileDialog.Filter = "Excel Files|*.xls;*.xlsx;*.xlsm";
             if (openFileDialog.ShowDialog() == true)
             {
-                //PathExport = openFileDialog.FileName;
                 txtImportTable.Text = openFileDialog.FileName;
             }
 
@@ -40,9 +39,7 @@ namespace VolumeOfMaterials.FrontEnd
             openFileDialog.Filter = "Excel Files|*.xls;*.xlsx;*.xlsm";
             if (openFileDialog.ShowDialog() == true)
             {
-                //PathImport = openFileDialog.FileName;
                 txtExportTable.Text = openFileDialog.FileName;
-                
             }
         }
 

@@ -19,10 +19,11 @@ namespace VolumeOfMaterials
             Volume,
             Length,
             Area,
-            Count
+            Count,
+            Height,
         }
 
-        public static object[] SetObjectToImport(ExportObject ex)
+        public static object[] SetValuesToExport(ExportObject ex)
         {
             
             var code = ex.Code;
