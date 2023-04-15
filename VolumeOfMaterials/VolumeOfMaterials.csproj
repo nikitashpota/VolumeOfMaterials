@@ -76,7 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
-    <Compile Include="Commands\cmdExportExcel.cs" />
+    <Compile Include="Commands\CmdExportExcel.cs" />
     <Compile Include="FrontEnd\ExportExcelWindow.xaml.cs">
       <DependentUpon>ExportExcelWindow.xaml</DependentUpon>
     </Compile>

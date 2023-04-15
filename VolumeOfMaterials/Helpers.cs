@@ -13,7 +13,7 @@ namespace VolumeOfMaterials
         public static double ToMeters(double feet, int decimals = 2) => Math.Round(UnitUtils.Convert(feet, UnitTypeId.Feet, UnitTypeId.Meters), decimals, MidpointRounding.AwayFromZero);
         public static double ToSqMeters(double sqFeet, int decimals = 2) => Math.Round(UnitUtils.Convert(sqFeet, UnitTypeId.SquareFeet, UnitTypeId.SquareMeters), decimals, MidpointRounding.AwayFromZero);
         public static double ToCubeMeters(double cubeFeet, int decimals = 2) => Math.Round(UnitUtils.Convert(cubeFeet, UnitTypeId.CubicFeet, UnitTypeId.CubicMeters), decimals, MidpointRounding.AwayFromZero);
-
+        public static string GetDemensionsFromCode(string code) => code.Split('_').ToList()[1];
         public enum Property
         {
             Volume,
@@ -28,7 +28,7 @@ namespace VolumeOfMaterials
             
             var code = ex.Code;
 
-            Property[] order = GetPropertiesInOrder(code.Split('_').ToList()[1]);
+            Property[] order = GetPropertiesInOrder(GetDemensionsFromCode(code));
             var l = (int)order.Length;
             object[] obj = new object[l];
             for (int i = 0; i < order.Length; i++)

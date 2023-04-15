@@ -12,7 +12,7 @@ using static VolumeOfMaterials.Helpers;
 namespace VolumeOfMaterials.Commands
 {
     [Transaction(TransactionMode.Manual)]
-    public class cmdExportExcel : IExternalCommand
+    public class CmdExportExcel : IExternalCommand
     {
         [System.Obsolete]
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
@@ -60,12 +60,14 @@ namespace VolumeOfMaterials.Commands
 
             foreach (var ex in exportObjects)
             {
-                var subArrayIndex = Array.FindIndex(tableExport, row => Array.IndexOf(row, ex.Name) != -1);
-                var index = Array.IndexOf(tableExport[subArrayIndex], ex.Name) + 1;
-
-                object[][] exportArray = new object[1][];
-                exportArray[0] = SetValuesToExport(ex);
-                DSOffice.Data.ExportExcel(window.txtExportTable.Text, window.txtExportBook.Text, subArrayIndex, index, exportArray);
+                var subArrayIndex = Array.FindIndex(tableExport, row => Array.IndexOf(row, ex.Code) != -1);
+                if (subArrayIndex != -1)
+                {
+                    var index = Array.IndexOf(tableExport[subArrayIndex], ex.Code) + 2;
+                    object[][] exportArray = new object[1][];
+                    exportArray[0] = SetValuesToExport(ex);
+                    DSOffice.Data.ExportExcel(window.txtExportTable.Text, window.txtExportBook.Text, subArrayIndex, index, exportArray);
+                }
             }
             return Result.Succeeded;
         }

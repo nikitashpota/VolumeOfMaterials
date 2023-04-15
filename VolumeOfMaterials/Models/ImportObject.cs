@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace VolumeOfMaterials.Models
@@ -15,7 +13,7 @@ namespace VolumeOfMaterials.Models
         public double Volume { get; set; } = 0;
         public double Length { get; set; } = 0;
         public double Area { get; set; } = 0;
-
+        public double Height { get; set; } = 0;
         public double Count { get; set; } = 1;
 
 
@@ -26,7 +24,7 @@ namespace VolumeOfMaterials.Models
 
             try
             {
-                var dimensions = Code.Split('_').ToList()[1];
+                var dimensions = Helpers.GetDemensionsFromCode(Code);
                 var props = Helpers.GetPropertiesInOrder(dimensions);
 
                 foreach (var prop in props)
@@ -39,7 +37,7 @@ namespace VolumeOfMaterials.Models
 
                         case Helpers.Property.Length:
                             Length = GetLengthElement(element);
-                            break ;
+                            break;
 
                         case Helpers.Property.Area:
                             Area = GetAreaElement(element);
@@ -48,20 +46,23 @@ namespace VolumeOfMaterials.Models
                         case Helpers.Property.Count:
                             Count = 1;
                             break;
+
+                        case Helpers.Property.Height:
+                            Height = GetHeightElement(element);
+                            break;
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                //MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message, "Ошибка импортируемого объекта", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            
+
         }
 
-        private int GetCategoryId (Element e)
+        private int GetCategoryId(Element e)
         {
-            var categoryId = 0;
-            categoryId = e.Category.GetHashCode();
+            var categoryId = e.Category.GetHashCode();
             return categoryId;
         }
 
@@ -71,7 +72,7 @@ namespace VolumeOfMaterials.Models
             var categoryId = GetCategoryId(e);
             var parameter = (Parameter)null;
 
-            if(categoryId == BuiltInCategory.OST_StructuralFraming.GetHashCode() 
+            if (categoryId == BuiltInCategory.OST_StructuralFraming.GetHashCode()
                 || categoryId == BuiltInCategory.OST_Walls.GetHashCode()
                 || categoryId == BuiltInCategory.OST_StairsRailing.GetHashCode()
                 || categoryId == BuiltInCategory.OST_Roofs.GetHashCode())
@@ -85,6 +86,23 @@ namespace VolumeOfMaterials.Models
             }
 
             return length;
+        }
+        private double GetHeightElement(Element e)
+        {
+            var height = (double)0;
+            var categoryId = GetCategoryId(e);
+            var parameter = (Parameter)null;
+
+            if (categoryId == BuiltInCategory.OST_StructuralColumns.GetHashCode()
+                || categoryId == BuiltInCategory.OST_Walls.GetHashCode())
+            {
+                parameter = e.get_Parameter(BuiltInParameter.CURTAIN_WALL_PANELS_HEIGHT);
+            }
+            if (parameter != null)
+            {
+                height = parameter.AsDouble();
+            }
+            return height;
         }
 
         private double GetAreaElement(Element e)
@@ -102,7 +120,7 @@ namespace VolumeOfMaterials.Models
         private double GetVolumeElement(Element e)
         {
             var geometryElement = e.get_Geometry(new Options());
-            var solids = new List<Solid>(); 
+            var solids = new List<Solid>();
 
             foreach (GeometryObject geometryObject in geometryElement)
             {
@@ -120,7 +138,7 @@ namespace VolumeOfMaterials.Models
 
                 else
                 {
-                    if(geometryObject is Solid)
+                    if (geometryObject is Solid)
                     {
                         var solid = (Solid)geometryObject;
                         solids.Add(solid);
