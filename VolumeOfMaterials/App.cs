@@ -31,24 +31,24 @@ namespace VolumeOfMaterials
             pbImportExport.Image = GetResourceImage(assembly, "VolumeOfMaterials.Resources.vop16.png");
 
 
-            try
-            {
-                application.ControlledApplication.DocumentOpening += new EventHandler<DocumentOpeningEventArgs>(application_DocumentOpening);
-                application.ControlledApplication.DocumentOpened += new EventHandler<DocumentOpenedEventArgs>(application_DocumentOpened);
-            }
+            //try
+            //{
+            //    application.ControlledApplication.DocumentOpening += new EventHandler<DocumentOpeningEventArgs>(application_DocumentOpening);
+            //    application.ControlledApplication.DocumentOpened += new EventHandler<DocumentOpenedEventArgs>(application_DocumentOpened);
+            //}
 
-            catch (Exception)
-            {
-                return Result.Failed;
-            }
+            //catch (Exception)
+            //{
+            //    return Result.Failed;
+            //}
 
             return Result.Succeeded;
         }
 
         public Result OnShutdown(UIControlledApplication application)
         {
-            application.ControlledApplication.DocumentOpening -= application_DocumentOpening;
-            application.ControlledApplication.DocumentOpened -= application_DocumentOpened;
+            //application.ControlledApplication.DocumentOpening -= application_DocumentOpening;
+            //application.ControlledApplication.DocumentOpened -= application_DocumentOpened;
             return Result.Succeeded;
         }
 

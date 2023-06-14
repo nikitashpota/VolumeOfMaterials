@@ -1,5 +1,5 @@
 ﻿<mah:MetroWindow x:Class="VolumeOfMaterials.FrontEnd.ExportExcelWindow"
-        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -8,11 +8,10 @@
              mc:Ignorable="d"
              ResizeMode="NoResize"
              Title="VolumeOfMaterials Export\Import"
-             Height="250" Width="500">
+             Height="Auto" SizeToContent="Height"
+             Width="750" MinWidth="500" MaxWidth="800">
     <mah:MetroWindow.Resources>
-
         <ResourceDictionary>
-
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
@@ -20,52 +19,154 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </mah:MetroWindow.Resources>
+    <Grid Margin="4">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="8"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <StackPanel Orientation="Vertical">
+            <Label Margin="0 8 0 0">Выбор таблицы Excel:</Label>
 
-    <Grid  Margin="8">
-        <StackPanel Orientation="Vertical">
             <Grid Margin="0 0 0 8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-                <Button Style="{DynamicResource MahApps.Styles.Button.Square}" Grid.Column="0" Name="btnImport" Click="btnImport_Click">Import From</Button>
-                <TextBox IsReadOnly="True" Grid.Column="1" HorizontalAlignment="Stretch" Name="txtImportTable">
-                    <mah:TextBoxHelper.Watermark>
-                        Select Excel File for Import
-                    </mah:TextBoxHelper.Watermark>
-                </TextBox>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
             </Grid>
-            <TextBox Margin="0 0 0 8" Name="txtImportBook">
-                <mah:TextBoxHelper.Watermark>
-                    Enter name book for Import
-                </mah:TextBoxHelper.Watermark>
-                <mah:TextBoxHelper.ClearTextButton>
-                    True
-                </mah:TextBoxHelper.ClearTextButton>
-            </TextBox>
-        
+
             <Grid Margin="0 0 0 8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-                <Button Style="{DynamicResource MahApps.Styles.Button.Square}" Grid.Column="0" Name="btnExport" Click="btnExport_Click">Export to</Button>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Button Style="{DynamicResource MahApps.Styles.Button.Square}" Grid.Column="0" Name="btnExport" Click="btnExport_Click">Выбор</Button>
                 <TextBox IsReadOnly="True" Grid.Column="1" HorizontalAlignment="Stretch" Name="txtExportTable">
                     <mah:TextBoxHelper.Watermark>
-                        Select Excel File for Export
+                        Путь таблицы Excel
                     </mah:TextBoxHelper.Watermark>
                 </TextBox>
             </Grid>
-            <TextBox Margin="0 0 0 8" Name="txtExportBook" >
+            <!--<TextBox Margin="0 0 0 8" Name="txtExportBook" >
                 <mah:TextBoxHelper.Watermark>
                     Enter name book for Export
                 </mah:TextBoxHelper.Watermark>
                 <mah:TextBoxHelper.ClearTextButton>
                     True
                 </mah:TextBoxHelper.ClearTextButton>
-            </TextBox>
+            </TextBox>-->
+            <Label Margin="0 8 0 0">Книги:</Label>
+            <Border Margin="0 8 0 0" BorderBrush="LightGray" BorderThickness="1">
+                <ListBox Name="lbBooks" ItemsSource="{Binding}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                    <ColumnDefinition Width="25"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Text}" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Click="Delete_Click" BorderThickness="1" Tag="Books">
+                                    x
+                                    <!--<iconPacks:PackIconMaterialDesign Kind="Clear" Width="10" Height="10"/>-->
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+            <Grid Margin="0 8 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Name="txtAddBooks" Grid.ColumnSpan="2">
+                    <mah:TextBoxHelper.Watermark>
+                        Добавить книгу в список
+                    </mah:TextBoxHelper.Watermark>
+                </TextBox>
+                <Button Grid.Column="1" Style="{DynamicResource MahApps.Styles.Button.Square}" Name="btnAddBooks" Click="btnAddBooks_Click">Добавить</Button>
+            </Grid>
+            
+            <Label Margin="0 8 0 0">Назначение:</Label>
+            <Border Margin="0 8 0 0" BorderBrush="LightGray" BorderThickness="1">
+                <ListBox Name="lvDescriptions" ItemsSource="{Binding}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                    <ColumnDefinition Width="25"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Text}" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Click="Delete_Click" BorderThickness="1" Tag="Items">
+                                    x
+                                    <!--<iconPacks:PackIconMaterialDesign Kind="Clear" Width="10" Height="10"/>-->
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
+            </Border>
+            <Grid Margin="0 8 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Name="txtAddDescription" Grid.ColumnSpan="2">
+                    <mah:TextBoxHelper.Watermark>
+                        Добавить назначение в список
+                    </mah:TextBoxHelper.Watermark>
+                </TextBox>
+                <Button Grid.Column="2" Style="{DynamicResource MahApps.Styles.Button.Square}" Name="btnAdd" Click="btnAdd_Click">Добавить </Button>
+            </Grid>
         </StackPanel>
-        <Button Width="50" Content="Run" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="Button_Click" />
+
+    </Grid>
+        <Grid Grid.Column="2">
+                <StackPanel Orientation="Vertical">
+                    <Label Margin="0 8 0 0">
+                        Выбор связаных моделей (типы):
+                    </Label>
+                    <Border Margin="0 8 0 0 " BorderBrush="LightGray" BorderThickness="1">
+                        <ListBox Name="lbLinks" ItemsSource="{Binding}" SelectionMode="Multiple">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"></ColumnDefinition>
+                                            <ColumnDefinition Width="25"></ColumnDefinition>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Text}" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+                </StackPanel>
+        </Grid>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" Height="30" VerticalAlignment="Bottom">
+                <Button Width="100" Margin="0 0 6 0">
+                    Сохранить
+                </Button>
+                <Button Width="100" Margin="0 0 6 0">
+                    Загрузить
+                </Button>
+            </StackPanel>
+            <Button  Height="30" Grid.Column="1" Width="100" Content="Готово" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="Button_Click" />
+        </Grid>
     </Grid>
 </mah:MetroWindow>

@@ -21,11 +21,12 @@ namespace VolumeOfMaterials
             Area,
             Count,
             Height,
+            Perimeter,
+            Thickness
         }
 
         public static object[] SetValuesToExport(ExportObject ex)
         {
-            
             var code = ex.Code;
 
             Property[] order = GetPropertiesInOrder(GetDemensionsFromCode(code));
@@ -46,6 +47,12 @@ namespace VolumeOfMaterials
                         break;
                     case Property.Count:
                         obj[i] = ex.Count;
+                        break;
+                    case Property.Perimeter:
+                        obj[i] = ex.Perimeter;
+                        break;
+                    case Property.Thickness:
+                        obj[i] = ex.Thickness;
                         break;
                 }
             }
@@ -70,6 +77,12 @@ namespace VolumeOfMaterials
                         break;
                     case 'C':
                         properties.Add(Property.Count);
+                        break;
+                    case 'P':
+                        properties.Add(Property.Perimeter);
+                        break;
+                    case 'T':
+                        properties.Add(Property.Thickness);
                         break;
                     default:
                         throw new ArgumentException($"Invalid order: {order}");

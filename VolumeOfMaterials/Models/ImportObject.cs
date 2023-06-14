@@ -2,25 +2,29 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI.WebControls;
 using System.Windows;
+using Parameter = Autodesk.Revit.DB.Parameter;
 
 namespace VolumeOfMaterials.Models
 {
     public class ImportObject
     {
         public string Code { get; set; } = "";
-        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
         public double Volume { get; set; } = 0;
         public double Length { get; set; } = 0;
         public double Area { get; set; } = 0;
         public double Height { get; set; } = 0;
         public double Count { get; set; } = 1;
+        public double Perimeter { get; set; } = 0;
+        public double Thickness { get; set; } = 0;
 
 
         public ImportObject(Element element, Element type)
         {
             Code = type.LookupParameter("PP_Code").AsString();
-            Name = type.LookupParameter("PP_NameElement").AsString();
+            Description = element.LookupParameter("PP_Description").AsString();
 
             try
             {
@@ -50,6 +54,15 @@ namespace VolumeOfMaterials.Models
                         case Helpers.Property.Height:
                             Height = GetHeightElement(element);
                             break;
+
+                        case Helpers.Property.Perimeter:
+                            Perimeter = GetPerimeterElement(element);
+                            break;
+
+                        case Helpers.Property.Thickness:
+                            Thickness = GetThicknessElement(element);
+                            break;
+
                     }
                 }
             }
@@ -64,6 +77,43 @@ namespace VolumeOfMaterials.Models
         {
             var categoryId = e.Category.GetHashCode();
             return categoryId;
+        }
+
+
+        private double GetThicknessElement(Element e)
+        {
+            var thickness = (double)0;
+            var categoryId = GetCategoryId(e);
+            var parameter = (Parameter)null;
+
+            if (categoryId == BuiltInCategory.OST_Floors.GetHashCode())
+            {
+                parameter = e.get_Parameter(BuiltInParameter.FLOOR_ATTR_THICKNESS_PARAM);
+            }
+            if (parameter != null)
+            {
+                thickness = parameter.AsDouble();
+            }
+
+            return thickness;
+        }
+
+        private double GetPerimeterElement(Element e)
+        {
+            var perimeter = (double)0;
+            var categoryId = GetCategoryId(e);
+            var parameter = (Parameter)null;
+
+            if (categoryId == BuiltInCategory.OST_Floors.GetHashCode())
+            {
+                parameter = e.get_Parameter(BuiltInParameter.HOST_PERIMETER_COMPUTED);
+            }
+            if (parameter != null)
+            {
+                perimeter = parameter.AsDouble();
+            }
+
+            return perimeter;
         }
 
         private double GetLengthElement(Element e)
