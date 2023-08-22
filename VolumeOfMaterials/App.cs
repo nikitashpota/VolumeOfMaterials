@@ -15,15 +15,17 @@ namespace VolumeOfMaterials
     internal class App : IExternalApplication
     {
         private Stopwatch stopWatch = new Stopwatch();
+        public static Document CurrentDocument { get; private set; }
+
         public Result OnStartup(UIControlledApplication application)
         {
             
             Assembly assembly = Assembly.GetExecutingAssembly();
             DirectoryInfo thisAssemblyDirectoryInfo = new DirectoryInfo(assembly.Location);
 
-            var ribbonPanel = application.CreateRibbonPanel("VoM");
+            var ribbonPanel = application.CreateRibbonPanel("MODUS ВОР");
 
-            var pbImportExport = ribbonPanel.AddItem(new PushButtonData("ExportExcel", "Export to\nExcel",
+            var pbImportExport = ribbonPanel.AddItem(new PushButtonData("ExportExcel", "Ведомость объемов\nработ",
                 thisAssemblyDirectoryInfo.FullName,
                 typeof(Commands.CmdExportExcel).FullName)) as PushButton;
 
@@ -31,16 +33,16 @@ namespace VolumeOfMaterials
             pbImportExport.Image = GetResourceImage(assembly, "VolumeOfMaterials.Resources.vop16.png");
 
 
-            //try
-            //{
-            //    application.ControlledApplication.DocumentOpening += new EventHandler<DocumentOpeningEventArgs>(application_DocumentOpening);
-            //    application.ControlledApplication.DocumentOpened += new EventHandler<DocumentOpenedEventArgs>(application_DocumentOpened);
-            //}
+            try
+            {
+                //application.ControlledApplication.DocumentOpening += new EventHandler<DocumentOpeningEventArgs>(application_DocumentOpening);
+                application.ControlledApplication.DocumentOpened += new EventHandler<DocumentOpenedEventArgs>(application_DocumentOpened);
+            }
 
-            //catch (Exception)
-            //{
-            //    return Result.Failed;
-            //}
+            catch (Exception)
+            {
+                return Result.Failed;
+            }
 
             return Result.Succeeded;
         }
@@ -48,34 +50,34 @@ namespace VolumeOfMaterials
         public Result OnShutdown(UIControlledApplication application)
         {
             //application.ControlledApplication.DocumentOpening -= application_DocumentOpening;
-            //application.ControlledApplication.DocumentOpened -= application_DocumentOpened;
+            application.ControlledApplication.DocumentOpened -= application_DocumentOpened;
             return Result.Succeeded;
         }
 
         public void application_DocumentOpening(object sender, DocumentOpeningEventArgs args)
         {
-            stopWatch.Start();
+            //stopWatch.Start();
         }
 
         public void application_DocumentOpened(object sender, DocumentOpenedEventArgs args)
         {
 
-            Document doc = args.Document;
+            CurrentDocument = args.Document;
             
 
-            stopWatch.Stop();
+            //stopWatch.Stop();
             
-            // Get the elapsed time as a TimeSpan value.
-            var ts = stopWatch.Elapsed;
+            //// Get the elapsed time as a TimeSpan value.
+            //var ts = stopWatch.Elapsed;
 
-            // Format and display the TimeSpan value.
-            var elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                ts.Hours, ts.Minutes, ts.Seconds,
-                ts.Milliseconds / 10);
+            //// Format and display the TimeSpan value.
+            //var elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+            //    ts.Hours, ts.Minutes, ts.Seconds,
+            //    ts.Milliseconds / 10);
 
-            stopWatch.Reset();
+            //stopWatch.Reset();
 
-            TaskDialog.Show("Hello", $"Document is opened, time {elapsedTime}");
+            //TaskDialog.Show("Hello", $"Document is opened, time {elapsedTime}");
         }
 
         public ImageSource GetResourceImage(Assembly assembly, string imageName)

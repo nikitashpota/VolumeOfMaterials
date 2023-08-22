@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI.WebControls;
 using System.Windows;
+using System.Windows.Media.Media3D;
 using Parameter = Autodesk.Revit.DB.Parameter;
 
 namespace VolumeOfMaterials.Models
@@ -11,9 +11,11 @@ namespace VolumeOfMaterials.Models
     public class ImportObject
     {
         public string Code { get; set; } = "";
+        public string Name { get; set; } = "";
         public string Description { get; set; } = "";
         public double Volume { get; set; } = 0;
         public double Length { get; set; } = 0;
+        public double Width { get; set; } = 0;
         public double Area { get; set; } = 0;
         public double Height { get; set; } = 0;
         public double Count { get; set; } = 1;
@@ -21,10 +23,53 @@ namespace VolumeOfMaterials.Models
         public double Thickness { get; set; } = 0;
 
 
-        public ImportObject(Element element, Element type)
+        public ImportObject(Element element, Element type, Dictionary<string, List<string>> rulesNames)
         {
-            Code = type.LookupParameter("PP_Code").AsString();
-            Description = element.LookupParameter("PP_Description").AsString();
+            Code = type.LookupParameter(Helpers.PARAMETER_NAME_CODE).AsString();
+            Description = element.LookupParameter(Helpers.PARAMETER_NAME_DESCRIPTION).AsString();
+            var selectPArameters = rulesNames.Where(x => Code.Intersect(x.Key).Any()).FirstOrDefault().Value;
+
+            if(selectPArameters != null && selectPArameters.Count > 0)
+            {
+                var typeParameters = type.Parameters;
+                var name = "";
+                foreach (var selectParameter in selectPArameters)
+                {
+                    if(selectParameter != Helpers.NAME_OF_STRUCTURE)
+                    {
+                        var res = GetNameFromParameters(typeParameters, selectParameter);
+                        if(res != null && res != "") name += $"{res};\n";
+                    }
+                    else
+                    {
+                        var layers = (type as HostObjAttributes)?.GetCompoundStructure()?.GetLayers();
+                        foreach(var layer in layers)
+                        {
+                            try
+                            {
+                                var res = App.CurrentDocument.GetElement(layer.MaterialId).LookupParameter("ADSK_Материал наименование").AsValueString();
+                                if(res != null && res != "") name += $"{res};\n";
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                    }
+                }
+
+                Name = name;
+            }
+            else
+            {
+                var elementParameters = element.Parameters;
+                Name = GetNameFromParameters(elementParameters, "ADSK_Наименование");
+                if (Name == "")
+                {
+                    var typeParameters = type.Parameters;
+                    Name = GetNameFromParameters(typeParameters, "ADSK_Наименование");
+                }
+            }
 
             try
             {
@@ -63,6 +108,10 @@ namespace VolumeOfMaterials.Models
                             Thickness = GetThicknessElement(element);
                             break;
 
+                        case Helpers.Property.Width:
+                            Width = GetWidthElement(element);
+                            break;
+
                     }
                 }
             }
@@ -72,6 +121,21 @@ namespace VolumeOfMaterials.Models
             }
 
         }
+
+        private string GetNameFromParameters(ParameterSet parameters, string parameterName)
+        {
+            foreach (Parameter parameter in parameters)
+            {
+                if (parameter.Definition.Name == parameterName)
+                {
+                    return parameter.AsValueString();
+                }
+            }
+
+            return "";
+        }
+
+
 
         private int GetCategoryId(Element e)
         {
@@ -137,6 +201,25 @@ namespace VolumeOfMaterials.Models
 
             return length;
         }
+
+        private double GetWidthElement(Element e)
+        {   
+            var width = (double)0;
+            var categoryId = GetCategoryId(e);
+            var parameter = (Parameter)null;
+
+            if (categoryId == BuiltInCategory.OST_Windows.GetHashCode()
+                || categoryId == BuiltInCategory.OST_Doors.GetHashCode())
+            {
+                parameter = e.get_Parameter(BuiltInParameter.GENERIC_WIDTH);
+            }
+            if (parameter != null)
+            {
+                width = parameter.AsDouble();
+            }
+
+            return width;
+        }
         private double GetHeightElement(Element e)
         {
             var height = (double)0;
@@ -148,6 +231,12 @@ namespace VolumeOfMaterials.Models
             {
                 parameter = e.get_Parameter(BuiltInParameter.CURTAIN_WALL_PANELS_HEIGHT);
             }
+            if (categoryId == BuiltInCategory.OST_Windows.GetHashCode()
+                || categoryId == BuiltInCategory.OST_Doors.GetHashCode())
+            {
+                parameter = e.get_Parameter(BuiltInParameter.CASEWORK_HEIGHT);
+            }
+
             if (parameter != null)
             {
                 height = parameter.AsDouble();

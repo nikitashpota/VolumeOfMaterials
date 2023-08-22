@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,10 @@ namespace VolumeOfMaterials
 {
     public class Helpers
     {
+        public static string PARAMETER_NAME_CODE { get; } = "PP_Code";
+        public static string PARAMETER_NAME_DESCRIPTION { get; } = "PP_Description";
+
+        public static string NAME_OF_STRUCTURE = "<СТРУКТУРА>";
         public static double ToMeters(double feet, int decimals = 2) => Math.Round(UnitUtils.Convert(feet, UnitTypeId.Feet, UnitTypeId.Meters), decimals, MidpointRounding.AwayFromZero);
         public static double ToSqMeters(double sqFeet, int decimals = 2) => Math.Round(UnitUtils.Convert(sqFeet, UnitTypeId.SquareFeet, UnitTypeId.SquareMeters), decimals, MidpointRounding.AwayFromZero);
         public static double ToCubeMeters(double cubeFeet, int decimals = 2) => Math.Round(UnitUtils.Convert(cubeFeet, UnitTypeId.CubicFeet, UnitTypeId.CubicMeters), decimals, MidpointRounding.AwayFromZero);
@@ -22,8 +27,26 @@ namespace VolumeOfMaterials
             Count,
             Height,
             Perimeter,
-            Thickness
+            Thickness,
+            Width,
         }
+
+
+        public enum BookCategory
+        {
+            [Description("Стены (WAL)")]
+            Wall,
+            [Description("Перекрытия (SLB)")]
+            Slab,
+            [Description("Кровля (ROF)")]
+            Roof,
+            [Description("Окна и Двери (OPN)")]
+            Window,
+            [Description("Потолки (CLG)")]
+            Celling,
+        }
+
+        
 
         public static object[] SetValuesToExport(ExportObject ex)
         {
@@ -54,6 +77,12 @@ namespace VolumeOfMaterials
                     case Property.Thickness:
                         obj[i] = ex.Thickness;
                         break;
+                    case Property.Width:
+                        obj[i] = ex.Width;
+                        break;
+                    case Property.Height:
+                        obj[i] = ex.Height;
+                        break;
                 }
             }
             return obj;
@@ -83,6 +112,12 @@ namespace VolumeOfMaterials
                         break;
                     case 'T':
                         properties.Add(Property.Thickness);
+                        break;
+                    case 'H':
+                        properties.Add(Property.Height);
+                        break;
+                    case 'W':
+                        properties.Add(Property.Width);
                         break;
                     default:
                         throw new ArgumentException($"Invalid order: {order}");
