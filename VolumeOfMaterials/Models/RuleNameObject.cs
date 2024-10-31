@@ -10,6 +10,9 @@ namespace VolumeOfMaterials.Models
     {
         public string Tag { get; set; }
         public List<string> Parameters { get; set; }
+        public List<string> Prefixes { get; set; }
+        public List<string> Suffixes { get; set; }
+        public List<bool> Divides { get; set; } 
         public RuleNameObject()
         {
 

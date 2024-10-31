@@ -37,21 +37,42 @@
                         ItemsSource="{Binding}"
                         x:Name="LsbParameters"
                         >
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="BorderBrush" Value="Black" />
+                                <Setter Property="BorderThickness" Value="0,0,0,0.1" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Grid Margin="2" >
+                                <Grid Margin="2">
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40"></ColumnDefinition>
+                                        <ColumnDefinition Width="8"></ColumnDefinition>
                                         <ColumnDefinition Width="*"></ColumnDefinition>
+                                        <ColumnDefinition Width="8"></ColumnDefinition>
+                                        <ColumnDefinition Width="40"></ColumnDefinition>
+                                        <ColumnDefinition Width="8"></ColumnDefinition>
+                                        <ColumnDefinition Width="85"></ColumnDefinition>
                                         <ColumnDefinition Width="8"></ColumnDefinition>
                                         <ColumnDefinition Width="30"></ColumnDefinition>
                                     </Grid.ColumnDefinitions>
+                                    <TextBox HorizontalAlignment="Stretch" x:Name="TbxPrefix" Text="{Binding Prefix}" Grid.Column="0"></TextBox>
                                     <ComboBox 
+                                        Grid.Column="2"
                                         x:Name="CmbParameter"
                                         ItemsSource="{Binding SourceParameters}"
                                         SelectedItem="{Binding SelectedParameter}"
                                         SelectionChanged="ComboBox_SelectionChanged"
                                     />
-                                    <Button Grid.Column="2" Click="Button_Delete" BorderThickness="1">
+                                    <TextBox HorizontalAlignment="Stretch" x:Name="TbxSuffix" Text="{Binding Suffix}" Grid.Column="4"></TextBox>
+                                    <CheckBox Content="Перенести" Grid.Column="6" x:Name="ChbDivide" IsChecked="{Binding Divide}">
+                                        <CheckBox.ToolTip>
+                                            True - Перенос на след. строку
+                                            False - Отключить перенос
+                                        </CheckBox.ToolTip>
+                                    </CheckBox>
+                                    <Button Grid.Column="8"  Click="Button_Delete" BorderThickness="1">
                                     x                             
                                 </Button>
                                 </Grid>

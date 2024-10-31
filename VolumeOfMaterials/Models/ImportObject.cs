@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using System.Windows.Media.Media3D;
 using Parameter = Autodesk.Revit.DB.Parameter;
 
 namespace VolumeOfMaterials.Models
@@ -11,7 +10,7 @@ namespace VolumeOfMaterials.Models
     public class ImportObject
     {
         public string Code { get; set; } = "";
-        public string Name { get; set; } = "";
+        public List<string> Name { get; set; } = new List<string>();
         public string Description { get; set; } = "";
         public double Volume { get; set; } = 0;
         public double Length { get; set; } = 0;
@@ -23,52 +22,77 @@ namespace VolumeOfMaterials.Models
         public double Thickness { get; set; } = 0;
 
 
-        public ImportObject(Element element, Element type, Dictionary<string, List<string>> rulesNames)
+        public ImportObject(Element element, Element type, List<RuleNameObject> rulesNames)
         {
             Code = type.LookupParameter(Helpers.PARAMETER_NAME_CODE).AsString();
-            Description = element.LookupParameter(Helpers.PARAMETER_NAME_DESCRIPTION).AsString();
-            var selectPArameters = rulesNames.Where(x => Code.Intersect(x.Key).Any()).FirstOrDefault().Value;
+            Description = element.LookupParameter(Helpers.PARAMETER_NAME_DESCRIPTION)?.AsString() ?? "-";
+            var lightCode = Code.Substring(0, 3);
+            var selectItem = rulesNames.Where(x => x.Tag.Intersect(lightCode).Any()).FirstOrDefault();
 
-            if(selectPArameters != null && selectPArameters.Count > 0)
+            if (selectItem != null)
             {
+                var selectParameters = selectItem.Parameters;
+                var selectPrefixes = selectItem.Prefixes;
+                var selectSuffixes = selectItem.Suffixes;
+                var selectDivides = selectItem.Divides;
+
                 var typeParameters = type.Parameters;
                 var name = "";
-                foreach (var selectParameter in selectPArameters)
+                var nameList = new List<string>();
+                for (int i = 0; i < selectParameters.Count; i++)
                 {
-                    if(selectParameter != Helpers.NAME_OF_STRUCTURE)
+                    var selectDivide = selectDivides[i] ? "\n" : " ";
+                    var selectParameter = selectParameters[i];
+                    if (selectParameter != Helpers.NAME_OF_STRUCTURE)
                     {
                         var res = GetNameFromParameters(typeParameters, selectParameter);
-                        if(res != null && res != "") name += $"{res};\n";
+                        if (res != null && res != "")
+                        {
+                            name += $"{selectPrefixes[i]}{res}{selectSuffixes[i]}{selectDivide}";
+                            nameList.Add(name);
+                        }
                     }
                     else
                     {
                         var layers = (type as HostObjAttributes)?.GetCompoundStructure()?.GetLayers();
-                        foreach(var layer in layers)
+                        if (layers != null && layers.Count > 0)
                         {
-                            try
+                            foreach (var layer in layers)
                             {
-                                var res = App.CurrentDocument.GetElement(layer.MaterialId).LookupParameter("ADSK_Материал наименование").AsValueString();
-                                if(res != null && res != "") name += $"{res};\n";
-                            }
-                            catch
-                            {
+                                try
+                                {
+                                    var mat = App.CurrentDocument.GetElement(layer.MaterialId);
+                                    if (mat != null)
+                                    {
+                                        var lkp = mat.LookupParameter("ADSK_Материал наименование");
+                                        var widthLayer = Helpers.ToMillimeters(layer.Width);
+                                        var resWidth = widthLayer > 0 ? $" - {widthLayer} мм" : "";
 
+                                        if (lkp != null)
+                                        {
+                                            var res = lkp.AsValueString();
+                                            if (res != null && res != "")
+                                            {
+                                                nameList.Add($"{selectPrefixes[i]}{res}{resWidth}{selectSuffixes[i]}{selectDivide}");
+                                            }
+
+                                        }
+                                    }
+                                }
+                                catch
+                                {
+
+                                }
                             }
+
                         }
                     }
                 }
-
-                Name = name;
+                Name = nameList;
             }
             else
             {
-                var elementParameters = element.Parameters;
-                Name = GetNameFromParameters(elementParameters, "ADSK_Наименование");
-                if (Name == "")
-                {
-                    var typeParameters = type.Parameters;
-                    Name = GetNameFromParameters(typeParameters, "ADSK_Наименование");
-                }
+
             }
 
             try
@@ -168,7 +192,8 @@ namespace VolumeOfMaterials.Models
             var categoryId = GetCategoryId(e);
             var parameter = (Parameter)null;
 
-            if (categoryId == BuiltInCategory.OST_Floors.GetHashCode())
+            if (categoryId == BuiltInCategory.OST_Floors.GetHashCode()
+                || categoryId == BuiltInCategory.OST_Ceilings.GetHashCode())
             {
                 parameter = e.get_Parameter(BuiltInParameter.HOST_PERIMETER_COMPUTED);
             }
@@ -203,7 +228,7 @@ namespace VolumeOfMaterials.Models
         }
 
         private double GetWidthElement(Element e)
-        {   
+        {
             var width = (double)0;
             var categoryId = GetCategoryId(e);
             var parameter = (Parameter)null;

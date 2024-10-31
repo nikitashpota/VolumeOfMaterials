@@ -42,7 +42,7 @@ namespace VolumeOfMaterials.FrontEnd
         ObservableCollection<ItemDelete> Books = new ObservableCollection<ItemDelete>();
         ObservableCollection<ItemSelect> Links = new ObservableCollection<ItemSelect>();
         public List<RevitLinkType> SelectedLinks = new List<RevitLinkType>();
-        public Dictionary<string, List<string>> RulesNames = new Dictionary<string, List<string>>();
+        public List<RuleNameObject> RulesNames = new List<RuleNameObject>();
         private Document ExDocument { get; set; }
         public ExportExcelWindow(IEnumerable<RevitLinkType> links, Document document)
         {
@@ -54,11 +54,14 @@ namespace VolumeOfMaterials.FrontEnd
 
             lbBooks.DataContext = Books;
             Books.Add(new ItemDelete { Text = "Стены (WAL)" });
-            Books.Add(new ItemDelete { Text = "Перекрытия (SLB)"});
+            Books.Add(new ItemDelete { Text = "Перекрытия (SLB)" });
+            Books.Add(new ItemDelete { Text = "Колонны (CLM)" });
+            Books.Add(new ItemDelete { Text = "Балки (FRM)" });
             Books.Add(new ItemDelete { Text = "Кровля (ROF)" });
-            Books.Add(new ItemDelete { Text = "Окна и Двери (OPN)"});
-            Books.Add(new ItemDelete { Text = "Витражи (CRP)"});
+            Books.Add(new ItemDelete { Text = "Окна и Двери (OPN)" });
+            Books.Add(new ItemDelete { Text = "Витражи (CRP)" });
             Books.Add(new ItemDelete { Text = "Потолки (CLG)" });
+            Books.Add(new ItemDelete { Text = "Фундамент (FUN)" });
 
             lvDescriptions.DataContext = Items;
             txtExportTable.Text = Settings.Default.PathExport;
@@ -161,12 +164,14 @@ namespace VolumeOfMaterials.FrontEnd
 
         private const string FileNameDes = "VOM.SETTINGS.DES.xml";
         private const string FileNameParams = "VOM.SETTINGS.PARAMS.xml";
+        private const string FileNameBooks = "VOM.SETTINGS.BOOKS.xml";
 
         private void SaveListBoxData()
         {
             string documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string filePathDes = Path.Combine(documentsFolder, FileNameDes);
             string filePathParams = Path.Combine(documentsFolder, FileNameParams);
+            string filePathBooks = Path.Combine(documentsFolder, FileNameBooks);
 
             using (var stream = new FileStream(filePathDes, FileMode.Create))
             {
@@ -180,12 +185,16 @@ namespace VolumeOfMaterials.FrontEnd
             using (var stream = new FileStream(filePathParams, FileMode.Create))
             {
                 var rulesNamesSerializer = new XmlSerializer(typeof(List<RuleNameObject>));
-                rulesNamesSerializer.Serialize(stream, RulesNames.ToList().Select(x =>
-                    new RuleNameObject
-                    {
-                        Tag = x.Key,
-                        Parameters = x.Value,
-                    }).ToList());
+                rulesNamesSerializer.Serialize(stream, RulesNames);
+
+                stream.Flush();
+                stream.Close();
+            }
+
+            using (var stream = new FileStream(filePathBooks, FileMode.Create))
+            {
+                var rulesNamesSerializer = new XmlSerializer(typeof(ObservableCollection<ItemDelete>));
+                rulesNamesSerializer.Serialize(stream, Books);
 
                 stream.Flush();
                 stream.Close();
@@ -209,15 +218,44 @@ namespace VolumeOfMaterials.FrontEnd
                 var lst = (List<RuleNameObject>)rulesNamesSerializer.Deserialize(stream);
                 lst.ForEach(x =>
                 {
-                    RulesNames[x.Tag] = x.Parameters;
                     var itemDelete = Books.FirstOrDefault(item => item.Text == x.Tag);
-                    if(itemDelete != null)
+                    if (itemDelete != null)
                     {
-                        itemDelete.ListRules = String.Join(", ", x.Parameters);
+                        itemDelete.ListRules = String.Join(", ", CreateRulesForListBox(x));
                         lbBooks.Items.Refresh();
                     }
 
                 });
+
+                RulesNames = lst;
+            }
+        }
+
+        private List<string> CreateRulesForListBox(RuleNameObject obj)
+        {
+            var res = new List<string>();
+            for(int i = 0; i < obj.Parameters.Count; i++)
+            {
+                res.Add($"<{obj.Prefixes[i]}> {obj.Parameters[i]} <{obj.Suffixes[i]}>");
+            }
+            return res;
+        }
+
+        private void LoadListBoxDataBooks()
+        {
+            string documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string filePathBooks = Path.Combine(documentsFolder, FileNameBooks);
+
+            if (!File.Exists(filePathBooks))
+            {
+                return;
+            }
+
+            using (var stream = new FileStream(filePathBooks, FileMode.Open))
+            {
+                var serializer = new XmlSerializer(typeof(ObservableCollection<ItemDelete>));
+                Books = (ObservableCollection<ItemDelete>)serializer.Deserialize(stream);
+                lbBooks.DataContext = Books;
             }
         }
 
@@ -248,12 +286,13 @@ namespace VolumeOfMaterials.FrontEnd
         {
             LoadListBoxDataDes();
             LoadListBoxDataParams();
+            LoadListBoxDataBooks();
         }
 
         private void BtnAddParameters(object sender, RoutedEventArgs e)
         {
             var button = (Button)e.Source;
-            
+
             var grid = (Grid)button.Parent;
             var textBlock = (TextBlock)grid.Children[0];
             var tag = textBlock.Text;
@@ -263,11 +302,26 @@ namespace VolumeOfMaterials.FrontEnd
 
             if (!w.DialogResult.Value) return;
 
-            if (RulesNames.ContainsKey(w.RuleNameObject.Tag)) RulesNames[w.RuleNameObject.Tag] = w.RuleNameObject.Parameters;
-            else RulesNames.Add(w.RuleNameObject.Tag, w.RuleNameObject.Parameters);
+            if (RulesNames.Find(x => x.Tag == w.RuleNameObject.Tag) != null) 
+            {
+                var searchItem = RulesNames.Find(x => x.Tag == w.RuleNameObject.Tag);
+                searchItem.Parameters = w.RuleNameObject.Parameters;
+                searchItem.Suffixes = w.RuleNameObject.Suffixes;
+                searchItem.Prefixes = w.RuleNameObject.Prefixes;
+                searchItem.Divides = w.RuleNameObject.Divides;
+            }
+            else RulesNames.Add(
+                new RuleNameObject
+                {
+                    Tag = w.RuleNameObject.Tag,
+                    Parameters = w.RuleNameObject.Parameters,
+                    Prefixes = w.RuleNameObject.Prefixes,
+                    Suffixes = w.RuleNameObject.Suffixes,
+                    Divides = w.RuleNameObject.Divides,
+                });
 
             var item = ((Button)sender).DataContext as ItemDelete;
-            item.ListRules = string.Join(", ", w.RuleNameObject.Parameters);
+            item.ListRules = string.Join(", ", CreateRulesForListBox(w.RuleNameObject));
             lbBooks.Items.Refresh();
 
 

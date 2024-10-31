@@ -16,6 +16,7 @@ namespace VolumeOfMaterials
 
         public static string NAME_OF_STRUCTURE = "<СТРУКТУРА>";
         public static double ToMeters(double feet, int decimals = 2) => Math.Round(UnitUtils.Convert(feet, UnitTypeId.Feet, UnitTypeId.Meters), decimals, MidpointRounding.AwayFromZero);
+        public static double ToMillimeters(double feet, int decimals = 2) => Math.Round(UnitUtils.Convert(feet, UnitTypeId.Feet, UnitTypeId.Millimeters), decimals, MidpointRounding.AwayFromZero);
         public static double ToSqMeters(double sqFeet, int decimals = 2) => Math.Round(UnitUtils.Convert(sqFeet, UnitTypeId.SquareFeet, UnitTypeId.SquareMeters), decimals, MidpointRounding.AwayFromZero);
         public static double ToCubeMeters(double cubeFeet, int decimals = 2) => Math.Round(UnitUtils.Convert(cubeFeet, UnitTypeId.CubicFeet, UnitTypeId.CubicMeters), decimals, MidpointRounding.AwayFromZero);
         public static string GetDemensionsFromCode(string code) => code.Split('_').ToList()[1];

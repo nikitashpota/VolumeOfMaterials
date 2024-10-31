@@ -107,20 +107,19 @@ namespace VolumeOfMaterials.Commands
                 foreach (ItemDelete item in window.lbBooks.Items)
                 {
                     var book = item.Text;
-
-                    var b = ex.Code.Substring(0, 3);
-
                     if (!book.Contains(ex.Code.Substring(0, 3))) continue;
 
-                    var tableExport = DSOffice.Data.ImportExcel(fileExport, book);
+                    object[][] tableExport = null;
+
+                    try { tableExport =  DSOffice.Data.ImportExcel(fileExport, book); }catch { continue; }
                     
                     var realDescriptions = new List<string>();
                     var outEx = new List<ExportObject>(); 
 
 
                     var des = ex.Description;
-                    var name = ex.Name;
-
+                    var names = ex.Name;
+ 
                     if (des != null && des.Length > 0)
                     {
                         var subArrayIndex = Array.FindIndex(tableExport, row => Array.IndexOf(row, ex.Code) != -1);
@@ -143,12 +142,18 @@ namespace VolumeOfMaterials.Commands
                             
                             DSOffice.Data.ExportExcel(window.txtExportTable.Text, book, subArrayIndex, index, exportArray);
                             realDescriptions.Add(des);
-                            object[][] myArray = new object[1][]; 
+                            object[][] myArray = new object[1][];
+                            object[][] codeElement = new object[1][]; 
 
                             myArray[0] = new object[1];
-                            myArray[0][0] = name;
+                            codeElement[0] = new object[1];
 
-                            DSOffice.Data.ExportToExcel(window.txtExportTable.Text, book, subArrayIndex, 1, myArray);
+                            foreach (var name in names)
+                            {
+                                myArray[0][0] = name;
+                                DSOffice.Data.ExportToExcel(window.txtExportTable.Text, book, subArrayIndex, 1, myArray);
+                                subArrayIndex += 1;
+                            }
                         }
                         else
                         {
@@ -157,9 +162,6 @@ namespace VolumeOfMaterials.Commands
                     }
                 }
             }
-
-
-
             return Result.Succeeded;
         }
 

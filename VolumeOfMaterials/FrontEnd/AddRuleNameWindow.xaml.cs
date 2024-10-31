@@ -1,6 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -19,7 +18,7 @@ namespace VolumeOfMaterials.FrontEnd
         ObservableCollection<ParameterItem> ParameterItems = new ObservableCollection<ParameterItem>();
         public RuleNameObject RuleNameObject { get; set; } = new RuleNameObject();
         private new string Tag { get; set; }
-        public AddRuleNameWindow(string tag, Document document, Dictionary<string, List<string>> rulesNames)
+        public AddRuleNameWindow(string tag, Document document, List<RuleNameObject> rulesNames)
         {
             InitializeComponent();
 
@@ -41,12 +40,17 @@ namespace VolumeOfMaterials.FrontEnd
                 Parameters.Add(parameter.Definition.Name);
             }
 
+            Parameters.Sort();
 
-            if (rulesNames.ContainsKey(tag))
+
+            if (rulesNames.Find(x => x.Tag == tag) != null)
             {
-                var listParameters = rulesNames[tag];
+                var listParameters = rulesNames.Find(x => x.Tag == tag).Parameters;
+                var listSuffixes = rulesNames.Find(x => x.Tag == tag).Suffixes;
+                var listPrefixes = rulesNames.Find(x => x.Tag == tag).Prefixes;
+                var listDivides = rulesNames.Find(x => x.Tag == tag).Divides;
 
-                var number = new Random().Next(100000, 999999);
+                
 
                 var sourceParameters = new ObservableCollection<string>();
 
@@ -55,10 +59,12 @@ namespace VolumeOfMaterials.FrontEnd
                     sourceParameters.Add(item);
                 }
 
-                foreach (var parameterName in listParameters)
+                for (int i = 0; i < listParameters.Count; i++)
                 {
                     if (sourceParameters.Count > 0)
                     {
+                        var number = new Random().Next(100000, 999999) + i;
+                        var parameterName = listParameters[i];
                         var comboBox = new ComboBox();
                         comboBox.ItemsSource = sourceParameters;
                         comboBox.SelectedItem = parameterName;
@@ -69,6 +75,9 @@ namespace VolumeOfMaterials.FrontEnd
                             ComboBox = comboBox,
                             SourceParameters = sourceParameters,
                             SelectedParameter = parameterName,
+                            Prefix = listPrefixes[i],
+                            Suffix = listSuffixes[i],
+                            Divide = listDivides[i],
                         };
 
                         ParameterItems.Add(parameterItem);
@@ -101,6 +110,9 @@ namespace VolumeOfMaterials.FrontEnd
         public class ParameterItem
         {
             public int Number { get; set; }
+            public string Suffix { get; set; }
+            public string Prefix { get; set; }
+            public bool Divide { get; set; }
             public ObservableCollection<string> SourceParameters { get; set; }
             public ComboBox ComboBox { get; set; }
             public string SelectedParameter { get; set; }
@@ -127,12 +139,17 @@ namespace VolumeOfMaterials.FrontEnd
                 {
                     Number = number,
                     ComboBox = comboBox,
+                    Prefix = "",
+                    Suffix = "",
+                    Divide = true,
                     SourceParameters = sourceParameters,
                     SelectedParameter = sourceParameters[0],
                 };
 
                 ParameterItems.Add(parameterItem);
             }
+
+            LsbParameters.Items.Refresh();
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -172,10 +189,54 @@ namespace VolumeOfMaterials.FrontEnd
             {
                 Tag = Tag,
                 Parameters = GetSelectedItemsFromComboBoxes(),
+                Suffixes = GetSuffixesFromTextBox(),
+                Prefixes = GetPrefixesFromTextBox(),
+                Divides = GetDividesFromCheckBox(),
             };
 
             DialogResult = true;
             Close();
+        }
+
+        private List<bool> GetDividesFromCheckBox()
+        {
+            var divides = new List<bool>();
+
+            foreach (var item in LsbParameters.Items)
+            {
+                var parameterItem = item as ParameterItem;
+                var changePrefixes = parameterItem.Divide;
+                divides.Add(changePrefixes);
+            }
+
+            return divides;
+        }
+
+        private List<string> GetPrefixesFromTextBox()
+        {
+            var prefixes = new List<string>();
+
+            foreach (var item in LsbParameters.Items)
+            {
+                var parameterItem = item as ParameterItem;
+                var changePrefixes = parameterItem.Prefix;
+                prefixes.Add(changePrefixes);
+            }
+
+            return prefixes;
+        }
+        private List<string> GetSuffixesFromTextBox()
+        {
+            var suffixes = new List<string>();
+
+            foreach (var item in LsbParameters.Items)
+            {
+                var parameterItem = item as ParameterItem;
+                var changeSuffixes = parameterItem.Suffix;
+                suffixes.Add(changeSuffixes);
+            }
+
+            return suffixes;
         }
 
         private List<string> GetSelectedItemsFromComboBoxes()

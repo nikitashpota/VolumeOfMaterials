@@ -5,7 +5,7 @@ namespace VolumeOfMaterials.Models
     public class ExportObject
     {
         public string Description { get; set; } = "";
-        public string Name { get; set; } = "";
+        public List<string> Name { get; set; } = new List<string>();
         public double Volume { get; set; } = 0;
         public double Length { get; set; } = 0;
         public double Height { get; set; } = 0;

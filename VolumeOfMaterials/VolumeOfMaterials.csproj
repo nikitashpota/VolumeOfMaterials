@@ -225,6 +225,7 @@
     <Compile Include="FrontEnd\AddRuleNameWindow.xaml.cs">
       <DependentUpon>AddRuleNameWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FrontEnd\Converters.cs" />
     <Compile Include="FrontEnd\ExportExcelWindow.xaml.cs">
       <DependentUpon>ExportExcelWindow.xaml</DependentUpon>
     </Compile>
